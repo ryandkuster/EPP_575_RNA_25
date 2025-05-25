@@ -1,0 +1,11 @@
+{
+    "salmon_version": "1.10.3",
+    "index": "salmon_index",
+    "libType": "A",
+    "mates1": "/lustre/isaac24/proj/UTK0296/teaching/2024_06_EPP_575_rnaseq/raw_data/SRR18313907_1.fastq.gz",
+    "mates2": "/lustre/isaac24/proj/UTK0296/teaching/2024_06_EPP_575_rnaseq/raw_data/SRR18313907_2.fastq.gz",
+    "threads": "8",
+    "validateMappings": [],
+    "output": "salmon_output/minus_EGTA_3h_rep2_quant",
+    "auxDir": "aux_info"
+}

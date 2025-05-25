@@ -1,0 +1,50 @@
+[2025-05-23 14:40:24.490] [jointLog] [info] setting maxHashResizeThreads to 8
+[2025-05-23 14:40:24.490] [jointLog] [info] Fragment incompatibility prior below threshold.  Incompatible fragments will be ignored.
+[2025-05-23 14:40:24.490] [jointLog] [info] Usage of --validateMappings implies use of minScoreFraction. Since not explicitly specified, it is being set to 0.65
+[2025-05-23 14:40:24.490] [jointLog] [info] Setting consensusSlack to selective-alignment default of 0.35.
+[2025-05-23 14:40:24.490] [jointLog] [info] parsing read library format
+[2025-05-23 14:40:24.490] [jointLog] [info] There is 1 library.
+[2025-05-23 14:40:24.491] [jointLog] [info] Loading pufferfish index
+[2025-05-23 14:40:24.492] [jointLog] [info] Loading dense pufferfish index.
+[2025-05-23 14:40:24.618] [jointLog] [info] done
+[2025-05-23 14:40:24.642] [jointLog] [info] Index contained 40,800 targets
+[2025-05-23 14:40:24.647] [jointLog] [info] Number of decoys : 0
+[2025-05-23 14:40:25.346] [jointLog] [info] Automatically detected most likely library type as ISR
+
+[2025-05-23 14:41:25.000] [jointLog] [info] Thread saw mini-batch with a maximum of 0.70% zero probability fragments
+[2025-05-23 14:41:25.009] [jointLog] [info] Thread saw mini-batch with a maximum of 0.64% zero probability fragments
+[2025-05-23 14:41:25.014] [jointLog] [info] Thread saw mini-batch with a maximum of 0.62% zero probability fragments
+[2025-05-23 14:41:25.019] [jointLog] [info] Thread saw mini-batch with a maximum of 0.72% zero probability fragments
+[2025-05-23 14:41:25.039] [jointLog] [info] Thread saw mini-batch with a maximum of 0.70% zero probability fragments
+[2025-05-23 14:41:25.048] [jointLog] [info] Thread saw mini-batch with a maximum of 0.72% zero probability fragments
+[2025-05-23 14:41:25.062] [jointLog] [info] Thread saw mini-batch with a maximum of 0.68% zero probability fragments
+[2025-05-23 14:41:25.071] [jointLog] [info] Thread saw mini-batch with a maximum of 0.66% zero probability fragments
+[2025-05-23 14:41:25.106] [jointLog] [info] Computed 49,578 rich equivalence classes for further processing
+[2025-05-23 14:41:25.106] [jointLog] [info] Counted 18,455,832 total reads in the equivalence classes 
+[2025-05-23 14:41:25.111] [jointLog] [info] Number of mappings discarded because of alignment score : 9,606,831
+[2025-05-23 14:41:25.111] [jointLog] [info] Number of fragments entirely discarded because of alignment score : 4,552,540
+[2025-05-23 14:41:25.111] [jointLog] [info] Number of fragments discarded because they are best-mapped to decoys : 0
+[2025-05-23 14:41:25.111] [jointLog] [info] Number of fragments discarded because they have only dovetail (discordant) mappings to valid targets : 996,497
+[2025-05-23 14:41:25.111] [jointLog] [info] Mapping rate = 74.4462%
+
+[2025-05-23 14:41:25.111] [jointLog] [info] finished quantifyLibrary()
+[2025-05-23 14:41:25.112] [jointLog] [info] Starting optimizer
+[2025-05-23 14:41:25.124] [jointLog] [info] Marked 0 weighted equivalence classes as degenerate
+[2025-05-23 14:41:25.126] [jointLog] [info] iteration = 0 | max rel diff. = 16795.6
+[2025-05-23 14:41:25.282] [jointLog] [info] iteration = 100 | max rel diff. = 16.8535
+[2025-05-23 14:41:25.107] [fileLog] [info] 
+At end of round 0
+==================
+Observed 24790843 total fragments (24790843 in most recent round)
+
+[2025-05-23 14:41:25.426] [jointLog] [info] iteration = 200 | max rel diff. = 6.93965
+[2025-05-23 14:41:25.570] [jointLog] [info] iteration = 300 | max rel diff. = 2.19446
+[2025-05-23 14:41:25.713] [jointLog] [info] iteration = 400 | max rel diff. = 0.200175
+[2025-05-23 14:41:25.858] [jointLog] [info] iteration = 500 | max rel diff. = 0.23012
+[2025-05-23 14:41:26.004] [jointLog] [info] iteration = 600 | max rel diff. = 0.502859
+[2025-05-23 14:41:26.149] [jointLog] [info] iteration = 700 | max rel diff. = 0.0511602
+[2025-05-23 14:41:26.294] [jointLog] [info] iteration = 800 | max rel diff. = 0.461017
+[2025-05-23 14:41:26.336] [jointLog] [info] iteration = 830 | max rel diff. = 0.00935313
+[2025-05-23 14:41:26.337] [jointLog] [info] Finished optimizer
+[2025-05-23 14:41:26.337] [jointLog] [info] writing output 
+

@@ -1,0 +1,22 @@
+{
+    "read_files": "[ /lustre/isaac24/proj/UTK0296/teaching/2024_06_EPP_575_rnaseq/raw_data/SRR18313905_1.fastq.gz, /lustre/isaac24/proj/UTK0296/teaching/2024_06_EPP_575_rnaseq/raw_data/SRR18313905_2.fastq.gz]",
+    "expected_format": "ISR",
+    "compatible_fragment_ratio": 1.0,
+    "num_compatible_fragments": 25067151,
+    "num_assigned_fragments": 25067151,
+    "num_frags_with_concordant_consistent_mappings": 23702646,
+    "num_frags_with_inconsistent_or_orphan_mappings": 1369364,
+    "strand_mapping_bias": 0.000013458231913180482,
+    "MSF": 0,
+    "OSF": 0,
+    "ISF": 319,
+    "MSR": 0,
+    "OSR": 0,
+    "ISR": 23702646,
+    "SF": 901409,
+    "SR": 467636,
+    "MU": 0,
+    "OU": 0,
+    "IU": 0,
+    "U": 0
+}
