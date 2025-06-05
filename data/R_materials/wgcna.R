@@ -1,72 +1,69 @@
+# additional packages we'll need for WGCNA
+
+# This script is derived from:
+# https://bioinformaticsworkbook.org/tutorials/wgcna.html#gsc.tab=0
+# and:
+# https://rpubs.com/natmurad/WGCNA
+
 BiocManager::install("WGCNA", force=TRUE)
 install.packages("magrittr")
 BiocManager::install("genefilter")
 
-library(tidyverse)     # tidyverse will pull in ggplot2, readr, other useful libraries
-library(magrittr)      # provides the %>% operator
+library(tidyverse)
+library(magrittr)
 library(WGCNA) 
 library(tibble)
 library(readr)
 library(DESeq2)
-library(tidyverse)
+library(tximport)
+library(GenomicFeatures)
 library(genefilter)
+library(R.utils)
 
 allowWGCNAThreads()
 
+if (requireNamespace("rstudioapi", quietly = TRUE)) {
+  # Get active document context
+  doc_context <- rstudioapi::getActiveDocumentContext()
+  # Extract directory path
+  script_dir <- dirname(doc_context$path)
+} else {
+  script_dir <- normalizePath(path = commandArgs()[1])
+}
+script_dir = dirname(script_dir)
+setwd(script_dir)
 
-# from: https://bioinformaticsworkbook.org/tutorials/wgcna.html#gsc.tab=0
-# and:  https://rpubs.com/natmurad/WGCNA
+# give the full path to the "salmon_results" (it should end in "salmon_results"
+salmon_dir <- paste0(script_dir, "/salmon_output")
 
-counts = counts(dds)
-data <- as_tibble(counts, rownames = "Count")
-data <- data %>%
-  mutate(across(-Count, as.double))
-data[1:5,1:5]
-str(data)
-names(data)[1] = "GeneId"
-names(data) 
+# load the gff3 file, then create a transcript database/dataframe for use with deseq
+download.file("https://ftp.ncbi.nlm.nih.gov/genomes/all/GCA/000/001/735/GCA_000001735.2_TAIR10.1/GCA_000001735.2_TAIR10.1_genomic.gff.gz", destfile = "GCA_000001735.2_TAIR10.1_genomic.gff.gz", method = "wget")
+gunzip("GCA_000001735.2_TAIR10.1_genomic.gff.gz", remove = TRUE)
 
+txdb <- makeTxDbFromGFF("GCA_000001735.2_TAIR10.1_genomic.gff")
+keytypes(txdb)
+k <- keys(txdb, keytype = "CDSNAME")
+str(k)
 
-col_sel = names(data)[-1]     # Get all but first column name
-mdata <- data %>%
-  tidyr::pivot_longer(
-    .,                        # The dot is the the input data, magrittr tutorial
-    col = all_of(col_sel)
-  ) %>%  
-  mutate(
-    group =  gsub("_rep.*$", "", name)  # Get the shorter treatment names
-  )
+txdf = AnnotationDbi::select(txdb, k, "GENEID", "CDSNAME")
 
+samples <- read_csv(paste0(script_dir, "/salmon_output/salmon_data.csv"))
+Qfiles <- file.path(salmon_dir, samples$quant_file)
 
+# this step imports the count data from salmon
+txi <- tximport(files = Qfiles, type = "salmon", txOut = TRUE)
+head(txi$counts)
+colnames(txi$counts) <- samples$sample_id
 
-(
-  p <- mdata %>%
-    ggplot(., aes(x = name, y = value)) +             # x = treatment, y = RNA Seq count
-    geom_violin() +                                   # violin plot, show distribution
-    geom_point(alpha = 0.2) +                         # scatter plot
-    theme_bw() +
-    theme(
-      axis.text.x = element_text(angle = 90)          # Rotate treatment text
-    ) +
-    labs(x = "Treatment Groups", y = "RNA Seq Counts") +
-    facet_grid(cols = vars(group), drop = TRUE, scales = "free_x")      # Facet by hour
-)
+# convert fields to factors
+samples$treatment = factor(samples$treatment)
+samples$time = factor(samples$time)
+samples$replicate = factor(samples$replicate)
 
-
-de_input = as.matrix(data[,-1])
-row.names(de_input) = data$GeneId
-de_input[1:5,1:6]
-
-meta_df <- data.frame( Sample = names(data[-1])) %>%
-  mutate(
-    Type = gsub("_rep.*$", "", Sample)
-  )
-
-# run deseq
-dds <- DESeqDataSetFromMatrix(round(de_input),
-                              meta_df,
-                              design = ~ Type)
-dds <- DESeq(dds)
+# now we convert the txi object into a deseq-formatted object
+dds <- DESeqDataSetFromTximport(txi = txi, colData = samples, design = ~ treatment + time + treatment:time)
+dds <- DESeq(dds, test="LRT", reduced = ~ treatment + time)
+dds <- dds[which(mcols(dds)$fullBetaConv),]
 
 # transform data
 vsd <- varianceStabilizingTransformation(dds)
@@ -74,14 +71,13 @@ wpn_vsd <- getVarianceStabilizedData(dds)
 rv_wpn <- rowVars(wpn_vsd)
 summary(rv_wpn)
 
-# limit the count by quantiles (This will remove MANY genes)
+# limit the count by quantiles
+# (this will remove MANY genes, try a few settings and see how it affects your dataset)
 q_cutoff = .7
 q_cutoff = .95
 
 quantile_wpn <- quantile( rowVars(wpn_vsd), q_cutoff)  # <= changed to 95 quantile to reduce dataset
-
 expr_normalized <- wpn_vsd[ rv_wpn > quantile_wpn, ]
-
 expr_normalized[1:5,1:6]
 dim(expr_normalized)
 
@@ -116,6 +112,7 @@ par(mar = c(0,4,2,0))
 plot(sampleTree, main = "Sample clustering to detect outliers", sub="", xlab="", cex.lab = 1.5, 
      cex.axis = 1.5, cex.main = 2)
 
+# now we will visualize our topology to determine a target cutoff
 powers = c(c(1:10), seq(from = 12, to = 20, by = 2))
 
 sft = pickSoftThreshold(
@@ -151,7 +148,12 @@ text(sft$fitIndices[, 1],
      labels = powers,
      cex = cex1, col = "red")
 
-picked_power = 9
+# STOP!
+# visually inspect the plot to see if there is a point where we see an "elbow"
+# this elbow tells us where we get diminishing returns from increasing the soft
+# power threshold (pick a value just at or below the .90 R squared line)
+# these are simulated networks based on different power thresholds
+picked_power = 7
 temp_cor <- cor       
 cor <- WGCNA::cor
 
@@ -182,10 +184,10 @@ netwk <- blockwiseModules(input_mat,                # <= input here
 
 cor <- temp_cor
 
-# Convert labels to colors for plotting
+# convert labels to colors for plotting
 mergedColors = labels2colors(netwk$colors)
 
-# Plot the dendrogram and the module colors underneath
+# plot the dendrogram and the module colors underneath
 plotDendroAndColors(
   netwk$dendrograms[[1]],
   mergedColors[netwk$blockGenes[[1]]],
@@ -194,6 +196,10 @@ plotDendroAndColors(
   hang = 0.03,
   addGuide = TRUE,
   guideHang = 0.05 )
+
+# wow! so here we see the dendogram of the topological overlap matrix (TOM)
+# each leaf is a gene, and they have been clustered based on the network of all
+# gene correlations (clusters are impacted by soft-threshold value above) 
 
 netwk$colors[netwk$blockGenes[[1]]]
 table(netwk$colors)
@@ -206,7 +212,7 @@ module_df <- data.frame(
 module_df[1:5,]
 
 write_delim(module_df,
-            file = "gene_modules.txt",
+            file = paste0(script_dir, "/wgcna_output/gene_modules.txt"),
             delim = "\t")
 
 
@@ -242,7 +248,7 @@ mME %>% ggplot(., aes(x=treatment, y=name, fill=value)) +
   labs(title = "Module-trait Relationships", y = "Modules", fill="corr")
 
 # pick out a few modules of interest here
-modules_of_interest = c("blue", "turquoise")
+modules_of_interest = c("pink")
 
 # Pull out list of genes in that module
 submod = module_df %>%
@@ -303,16 +309,5 @@ edge_list = data.frame(TOM) %>%
 head(edge_list)
 
 write_delim(edge_list,
-            file = "edgelist.tsv",
+            file = paste0(script_dir, "/wgcna_output/edgelist.tsv"),
             delim = "\t")
-
-
-
-
-
-
-
-
-
-
-

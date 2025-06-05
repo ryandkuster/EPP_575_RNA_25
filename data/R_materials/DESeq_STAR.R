@@ -1,15 +1,20 @@
 library(DESeq2)
 library(pheatmap)
 
+if (requireNamespace("rstudioapi", quietly = TRUE)) {
+  # Get active document context
+  doc_context <- rstudioapi::getActiveDocumentContext()
+  # Extract directory path
+  script_dir <- dirname(doc_context$path)
+} else {
+  script_dir <- normalizePath(path = commandArgs()[1])
+}
+script_dir = dirname(script_dir)
+setwd(script_dir)
 
-setwd("~/Downloads/05_counts/")
-
-# open the featureCounts matrix as a matrix
-counts <- read.table("combined.counts.txt", sep="\t", header=TRUE, row.names="Geneid")
-
-# keep only the sample count columns
+# import the featurecounts count data
+counts <- read.table(paste0(script_dir, "/combined.counts.txt"), sep="\t", header=TRUE, row.names="Geneid")
 counts <- counts[, (ncol(counts)-5):ncol(counts)]
-
 sample_id <- colnames(counts)
 sample_id <- sapply(strsplit(sample_id, "[.]"), "[", 1)
 colnames(counts) <- sample_id
@@ -26,6 +31,7 @@ samples <- samples[, -1]
 dds <- DESeqDataSetFromMatrix(countData = counts,
                               colData = samples,
                               design = ~ hours_cold)
+dds <- DESeq(dds)
 
 # run the DESeq!
 dds <- DESeq(dds)
